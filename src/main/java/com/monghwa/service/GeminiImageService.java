@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,24 +36,29 @@ public class GeminiImageService {
      */
     public String generateDreamImage(String text, String style) {
         try {
-            // 프롬프트 구성
-            String prompt = "다음 꿈을 " + style + " 스타일에 딱 맞춰서 시각화해줘: " + text;
+            // ✅ 프롬프트 구성
+            String prompt = String.format(
+                    "%s 스타일로 '%s' 장면을 몽환적이고 예술적인 일러스트로 시각화해줘. " +
+                            "텍스트 설명은 절대 포함하지 말고, 반드시 이미지만 생성해.",
+                    style, text
+            );
 
-            // 요청 본문 (AI Studio 형식)
+            // 요청 본문 (responseModalities 형식으로 변경)
             String requestBody = """
             {
               "contents": [
                 {
                   "role": "user",
-                  "parts": [
-                    { "text": "%s" }
-                  ]
+                  "parts": [{ "text": "%s" }]
                 }
-              ]
+              ],
+              "generationConfig": {
+                "responseModalities": ["Image"]
+              }
             }
             """.formatted(prompt.replace("\"", "\\\""));
 
-            // HTTP 요청
+            // HTTP 요청 설정
             URL url = new URL(IMAGE_API_URL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
@@ -61,19 +67,19 @@ public class GeminiImageService {
 
             // 요청 본문 전송
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(requestBody.getBytes("UTF-8"));
+                os.write(requestBody.getBytes(StandardCharsets.UTF_8));
             }
 
             int code = conn.getResponseCode();
             System.out.println("📡 Google 응답 코드: " + code);
 
-            // 응답 스트림 읽기
             InputStream stream =
                     (code >= 200 && code < 300) ? conn.getInputStream() : conn.getErrorStream();
             if (stream == null) return "이미지 생성 실패 (응답 없음)";
 
+            // 응답 읽기
             StringBuilder sb = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = br.readLine()) != null) sb.append(line);
             }
@@ -81,12 +87,20 @@ public class GeminiImageService {
             String response = sb.toString();
             System.out.println("Gemini 응답 본문: " + response);
 
-            // inlineData.data 에서 Base64 이미지 추출
-            Pattern pattern = Pattern.compile("\"data\"\\s*:\\s*\"([^\"]+)\"");
-            Matcher matcher = pattern.matcher(response);
+            // inline_data 또는 inlineData 경로에서 Base64 이미지 추출
+            Pattern pattern1 = Pattern.compile("\"inline_data\"\\s*:\\s*\\{[^}]*\"data\"\\s*:\\s*\"([^\"]+)\"");
+            Pattern pattern2 = Pattern.compile("\"inlineData\"\\s*:\\s*\\{[^}]*\"data\"\\s*:\\s*\"([^\"]+)\"");
+            Matcher matcher1 = pattern1.matcher(response);
+            Matcher matcher2 = pattern2.matcher(response);
 
-            if (matcher.find()) {
-                String base64 = matcher.group(1);
+            String base64 = null;
+            if (matcher1.find()) {
+                base64 = matcher1.group(1);
+            } else if (matcher2.find()) {
+                base64 = matcher2.group(1);
+            }
+
+            if (base64 != null) {
                 return "data:image/png;base64," + base64;
             } else {
                 return "이미지 응답 오류: " + response;

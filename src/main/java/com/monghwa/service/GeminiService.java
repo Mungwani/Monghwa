@@ -13,8 +13,8 @@ import java.net.URL;
  * Google AI Studio의 Gemini 2.5 Flash 모델을 호출하여
  * 꿈 내용을 간결하고 의미 있게 요약해주는 기능 수행
  *
- * ✅ 사용 모델: gemini-2.5-flash
- * ✅ 엔드포인트: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+ * 사용 모델: gemini-2.5-flash
+ * 엔드포인트: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
  */
 @Service
 public class GeminiService {
@@ -22,7 +22,7 @@ public class GeminiService {
     private static final Dotenv dotenv = Dotenv.load();
     private static final String API_KEY = dotenv.get("GOOGLE_API_KEY");
 
-    // ✅ 최신 AI Studio REST API 엔드포인트 (2025년 기준)
+    // 최신 AI Studio REST API 엔드포인트
     private static final String GEMINI_API_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY;
 
@@ -39,7 +39,9 @@ public class GeminiService {
         {
           "contents": [{
             "parts": [{
-              "text": "이 꿈을 간결하게 해석해줘. 핵심 의미만 5줄 이내로 요약해서 알려줘. 이 꿈이 길몽인지 흉몽인지 태몽인지 확실하다면 그걸 맨 앞에 언급해줘: %s"
+              "text": "이 꿈을 간결하게 해석해줘. 핵심 의미만 5줄 이내로 요약해서 알려줘. 
+              이 꿈의 제목도 너가 정해줬음 좋겠어. 이건 맨 앞줄에 언급해줘.
+              그리고 이 꿈이 길몽인지 흉몽인지 태몽인지 심몽인지 등등 확실하다면 그걸 제목 아래에 언급하면서 꿈 해몽을 시작해줘 : %s"
             }]
           }]
         }

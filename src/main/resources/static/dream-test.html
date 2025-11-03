@@ -14,7 +14,7 @@
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
-            padding-top: 80px;
+            padding: 80px 20px 40px;
             color: #333;
             overflow-x: hidden;
         }
@@ -24,25 +24,24 @@
             font-weight: 700;
             color: #5e4ae3;
             text-shadow: 0 2px 6px rgba(94, 74, 227, 0.2);
-            letter-spacing: -0.5px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        strong, b {
+            font-weight: 700 !important;
+            color: #333;
         }
 
         .card {
-            width: 420px;
+            width: 80%;
+            max-width: 800px;
             background: #fff;
             border-radius: 20px;
-            padding: 30px 24px;
+            padding: 32px 28px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(94, 74, 227, 0.12);
+            margin-bottom: 30px;
+            margin-top: 50px;
+            box-sizing: border-box;
         }
 
         textarea {
@@ -54,63 +53,95 @@
             border: 1px solid #ccc;
             resize: none;
             outline: none;
-            transition: border 0.2s ease;
+            box-sizing: border-box;
         }
 
-        textarea:focus {
-            border-color: #5e4ae3;
-            box-shadow: 0 0 0 2px rgba(94, 74, 227, 0.1);
+        /* ✅ 5개 버튼을 한 줄에 균등 배치 */
+        .style-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 14px;
         }
 
-        select {
-            width: 100%;
-            padding: 10px;
+        .style-btn {
+            padding: 10px 0;
             border-radius: 10px;
-            border: 1px solid #bbb;
-            font-size: 14px;
-            margin-top: 12px;
-            outline: none;
-            transition: border 0.2s ease;
+            border: 1px solid #ccc;
+            background: #f8f8ff;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s ease;
         }
 
-        select:focus {
+        .style-btn:hover {
+            background: #ebe7ff;
+        }
+
+        .style-btn.active {
+            background-color: #5e4ae3;
+            color: white;
             border-color: #5e4ae3;
         }
 
-        button {
+        button.start-btn {
             width: 100%;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-top: 24px;
             padding: 12px;
-            margin-top: 16px;
             background-color: #5e4ae3;
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.2s ease;
+            transition: all 0.2s ease;
         }
 
-        button:hover {
+        button.start-btn:hover {
             background-color: #4b3acb;
-            transform: translateY(-1px);
+        }
+
+        /* ✅ 결과 박스 (초기에는 숨김 상태) */
+        .result-section {
+            width: 80%;
+            max-width: 800px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            line-height: 1.7;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        /* ✅ 버튼 클릭 시 나타나는 상태 */
+        .result-section.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .result-section h2 {
+            font-size: 1.3rem;
+            color: #5e4ae3;
+            margin-bottom: 8px;
+        }
+
+        .divider {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #d6cbff, #f4f1ff);
+            border: none;
+            margin: 10px 0 20px;
         }
 
         #result {
-            width: 420px;
-            background: #fff;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-            margin-top: 28px;
-            line-height: 1.7;
             white-space: pre-line;
-        }
-
-        #imageContainer {
-            width: 420px;
-            text-align: center;
-            margin-top: 24px;
+            margin-bottom: 20px;
         }
 
         #imageContainer img {
@@ -126,9 +157,9 @@
         }
 
         footer {
-            margin-top: 60px;
-            color: #999;
+            margin-top: 40px;
             font-size: 13px;
+            color: #999;
         }
     </style>
 
@@ -136,42 +167,65 @@
 </head>
 <body>
 <h1>몽화 🌙</h1>
-<h3>AI 꿈 해몽</h3>
 
+<!-- 입력 카드 -->
 <div class="card">
+    <h3>나의 꿈 입력</h3>
     <textarea id="dreamInput" placeholder="ex) 사과나무에 유독 빛나는 황금 사과가 하나 있었는데 그걸 따는 꿈을 꿨어"></textarea>
-    <h3>AI 이미지의 화풍을 선택해주세요</h3>
-    <select id="styleSelect">
-        <option value="수채화">🎨 수채화풍</option>
-        <option value="애니메이션">🖼 애니메이션풍</option>
-        <option value="사이버펑크">🌌 사이버펑크</option>
-        <option value="픽셀아트">🌠 픽셀아트</option>
-        <option value="사실적인">📷 사실적인 화풍</option>
-    </select>
-    <button onclick="sendDream()">시작하기</button>
+
+    <h3 style="margin-top:24px;">AI 이미지 화풍 선택</h3>
+    <div class="style-buttons">
+        <button class="style-btn active" data-style="수채화">🎨 수채화풍</button>
+        <button class="style-btn" data-style="애니메이션">🖼 애니메이션풍</button>
+        <button class="style-btn" data-style="사이버펑크">🌌 사이버펑크</button>
+        <button class="style-btn" data-style="픽셀아트">🌠 픽셀아트</button>
+    </div>
+
+    <button class="start-btn" onclick="sendDream()">시작하기</button>
 </div>
 
-<div id="result"></div>
-<div id="imageContainer"></div>
+<!-- 결과 카드 -->
+<div id="resultBox" class="result-section">
+    <h2>해몽 결과</h2>
+    <hr class="divider" />
+    <div id="result">꿈을 입력하고 버튼을 눌러주세요 🌙</div>
+
+    <h2 id="imageTitle">AI 이미지</h2>
+    <hr class="divider" />
+    <div id="imageContainer"></div>
+</div>
 
 <footer>© 2025 몽화(Monghwa) | AI Dream Interpretation</footer>
 
 <script>
     const md = window.markdownit({ breaks: true });
+    let selectedStyle = "수채화";
+
+    // ✅ 화풍 버튼 선택 이벤트
+    document.querySelectorAll(".style-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".style-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            selectedStyle = btn.dataset.style;
+        });
+    });
 
     async function sendDream() {
         const dreamText = document.getElementById("dreamInput").value.trim();
-        const style = document.getElementById("styleSelect").value;
         const resultEl = document.getElementById("result");
         const imageContainer = document.getElementById("imageContainer");
+        const imageTitle = document.getElementById("imageTitle");
+        const resultBox = document.getElementById("resultBox");
 
         if (!dreamText) return alert("🌙 꿈 내용을 입력해주세요!");
+
+        // ✅ 결과 박스 표시 (애니메이션으로 등장)
+        resultBox.classList.add("show");
 
         resultEl.textContent = "AI가 꿈을 해석 중입니다... ⏳";
         imageContainer.innerHTML = "";
 
         try {
-            // 1️⃣ 해몽 요청
             const res = await fetch("http://localhost:8080/api/dream", {
                 method: "POST",
                 headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -180,16 +234,17 @@
             const text = await res.text();
             resultEl.innerHTML = md.render(text);
 
-            // 2️⃣ 이미지 생성 요청
+            imageTitle.textContent = `${selectedStyle}풍 꿈 AI 이미지`;
+
             const waitMsg = document.createElement("p");
-            waitMsg.textContent = `🌙 ${style} 스타일로 시각화 중입니다... 🎨`;
+            waitMsg.textContent = `🌙 ${selectedStyle} 스타일로 시각화 중입니다... 🎨`;
             waitMsg.style.marginTop = "10px";
             imageContainer.appendChild(waitMsg);
 
             const imgRes = await fetch("http://localhost:8080/api/dream/image", {
                 method: "POST",
                 headers: { "Content-Type": "application/json; charset=utf-8" },
-                body: JSON.stringify({ text: dreamText, style }),
+                body: JSON.stringify({ text: dreamText, style: selectedStyle }),
             });
 
             const imageData = await imgRes.text();
@@ -197,11 +252,15 @@
                 const img = document.createElement("img");
                 img.src = imageData;
                 img.onload = () => img.classList.add("show");
-                imageContainer.innerHTML = `<h3>✨ ${style} 스타일 AI 이미지</h3>`;
+                imageContainer.innerHTML = "";
                 imageContainer.appendChild(img);
             } else {
                 imageContainer.textContent = "⚠️ 이미지 생성 실패: " + imageData;
             }
+
+            // ✅ 결과가 생성되면 자동 스크롤 아래로 부드럽게 이동
+            resultBox.scrollIntoView({ behavior: "smooth" });
+
         } catch (e) {
             resultEl.textContent = "⚠️ 오류 발생: " + e.message;
         }
